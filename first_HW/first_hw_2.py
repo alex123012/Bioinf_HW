@@ -1,3 +1,2 @@
-a_list = list(map(float,
-				  input('Enter list of numbers divided with spaces: ').split()))
-print(sum(a_list) / len(a_list))
+a = list(map(float, input('Enter list of num divided with spaces: ').split()))
+print(sum(a) / len(a))
