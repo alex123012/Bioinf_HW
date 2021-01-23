@@ -63,6 +63,7 @@ def is_in_logn(x, list_x):
 def recur_logn(x, list_x):
 
     ind = len(list_x) // 2
+    print(list_x)
 
     if list_x[ind] == x:
         return True
@@ -101,9 +102,9 @@ def main():
     list_x = map(float,
                  input('Введите последовательность через пробел: ').split())
     list_x = sorted(list(list_x))
-    print(list_x)
+
     x = float(input("Введите число: "))
-    print(is_in_logn(x, list_x)[0])
+    print(recur_logn(x, list_x)[0])
 
 
 def test_time():
@@ -153,5 +154,5 @@ def print_fig():
 
 if __name__ == '__main__':
     # print_fig()
-    # main()
-    ut.main()
+    main()
+    # ut.main()
