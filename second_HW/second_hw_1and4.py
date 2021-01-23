@@ -19,7 +19,7 @@ def bubble_sort(x):
 
 
 def main():
-    a = list(map(float, ('Enter numbers divided by space: ').split()))
+    a = list(map(float, input('Enter numbers divided by space: ').split()))
     x = bubble_sort(a)
     print(x, find_med(x), sep='\n')
 

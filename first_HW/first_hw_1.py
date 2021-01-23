@@ -8,8 +8,6 @@ def quadratic_equation(a, b, c, rnd=4):
                 return 'any numbers'
             else:
                 return 'No solutions'
-        elif c == 0:
-            return 0.0
         else:
             return -c / b
     elif b == 0:
