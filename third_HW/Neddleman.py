@@ -1,20 +1,14 @@
-def penny(x, y, comp={}):
+def penny(x, y):
 
     if x == y:
         return 5
-    # if x in comp and comp[x] == y:
-    #     return -1
     else:
         return -4
 
 
 def count_score_linear(x, y):
     comand = ('up', 'left', 'dig')
-    comp = {'A': 'G',
-            'T': 'C',
-            'G': 'A',
-            'C': 'T',
-            }
+
     lenx, leny = len(x) + 1, len(y) + 1
     s = [[(0, 0)] * lenx for _ in range(leny)]
 
@@ -27,7 +21,7 @@ def count_score_linear(x, y):
         for j in range(1, lenx):
             isk = [s[i - 1][j][0] - 10,
                    s[i][j - 1][0] - 10,
-                   s[i - 1][j - 1][0] + penny(x[j - 1], y[i - 1], comp)]
+                   s[i - 1][j - 1][0] + penny(x[j - 1], y[i - 1])]
             d = max(isk)
             dind = comand[isk.index(d)]
             s[i][j] = (d, dind)
@@ -36,4 +30,4 @@ def count_score_linear(x, y):
 
 x = input('Enter first sequence: ').upper()
 y = input('Enter second sequence: ').upper()
-print(count_score_linear(x, y))
+print('Score =', count_score_linear(x, y)[-1][-1][0])
