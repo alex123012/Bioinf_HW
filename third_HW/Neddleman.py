@@ -28,6 +28,63 @@ def count_score_linear(x, y):
     return s
 
 
-x = input('Enter first sequence: ').upper()
-y = input('Enter second sequence: ').upper()
-print('Score =', count_score_linear(x, y)[-1][-1][0])
+def print_align(i, j, upper, lower, mid, s, x, y):
+    if i == 0 and j == 0:
+        return upper[::-1], lower[::-1], mid[::-1]
+
+    ind = s[i][j][1]
+
+    if ind == 'dig':
+        upper += x[j - 1]
+        lower += y[i - 1]
+
+        mid += '|' if upper[-1] == lower[-1] else '.'
+
+        return print_align(i - 1, j - 1, upper, lower, mid, s, x, y)
+    elif ind == 'up':
+        upper += '-'
+        mid += ' '
+        lower += y[i - 1]
+        return print_align(i - 1, j, upper, lower, mid, s, x, y)
+    elif ind == 'left':
+        upper += x[j - 1]
+        mid += ' '
+        lower += '-'
+        return print_align(i, j - 1, upper, lower, mid, s, x, y)
+    else:
+        if i == 0:
+            upper += x[j - 1]
+            mid += ' '
+            lower += '-'
+            return print_align(i, j - 1, upper, lower, mid, s, x, y)
+        elif j == 0:
+            upper += '-'
+            mid += ' '
+            lower += y[i - 1]
+            return print_align(i - 1, j, upper, lower, mid, s, x, y)
+
+
+def print_all(s, x, y, all=None):
+    if all:
+        for i in s:
+            print(i)
+    res1, res2, mid = print_align(len(s) - 1,
+                                  len(s[0]) - 1, '', '', '', s, x, y)
+
+    print()
+    print(f"3'- {res1} -5'")
+    print(f'    {mid}')
+    print(f"5'- {res2} -3'")
+    print()
+    print('Score:', s[-1][-1][0])
+
+
+def main():
+    x = input('Enter first sequence: ').upper()
+    y = input('Enter second sequence: ').upper()
+    s = count_score_linear(x, y)
+    print_all(s, x, y)
+
+
+if __name__ == '__main__':
+    main()
