@@ -4,12 +4,8 @@ def reverse_compliment(string):
                          'G': 'C',
                          'C': 'G',
                          }
-    res = ''
-    for i in string[::-1].upper():
-        try:
-            res += comp_Watson_Crick[i]
-        except KeyError:
-            res += '-'
+
+    res = ''.join(comp_Watson_Crick[i] for i in string[::-1].upper())
 
     return res
 
