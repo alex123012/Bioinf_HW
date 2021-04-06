@@ -86,15 +86,34 @@ def is_in_n(x, list_x):
     return False
 
 
-@check_time
-def best_func(x, list_x):
+def insertionSort(list_r):
 
-    # Рофлянка
-    if x in list_x:
-        return True
+    for i in range(1, len(list_r)):
 
-    else:
-        return False
+        key = list_r[i]
+        j = i - 1
+
+        while j >= 0 and key < list_r[j]:
+            list_r[j + 1] = list_r[j]
+            j -= 1
+
+        list_r[j + 1] = key
+
+
+def counting_sort_for_digits(x, k):
+
+    counts = [0] * k
+
+    for i in range(len(x)):
+        dig = x[i]
+        counts[dig] += 1
+
+    result = []
+
+    for dig in range(10):
+        result += [dig] * counts[dig]
+
+    return result
 
 
 def main():

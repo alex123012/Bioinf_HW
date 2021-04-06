@@ -1,128 +1,132 @@
-def penny(x, y, comp={}):
+def penny(x, y, Watson_crick_comp={}):
 
     if x == y:
         return 5
-    # if x in comp and comp[x] == y:
-    #     return -1
     else:
         return -4
 
 
-def count_score_linear(x, y):
-    comand = ('up', 'left', 'dig')
-    comp = {'A': 'G',
-            'T': 'C',
-            'G': 'A',
-            'C': 'T',
-            }
-    lenx, leny = len(x) + 1, len(y) + 1
-    s = [[(0, 0)] * lenx for _ in range(leny)]
+def count_score_linear(x, y, end_gap=True):
 
-    for i in range(1, lenx):
-        s[0][i] = (s[0][i - 1][0] - 10, 0)
-    for i in range(1, leny):
-        s[i][0] = (s[i - 1][0][0] - 10, 0)
+    n, m = len(x), len(y)
 
-    for i in range(1, leny):
-        for j in range(1, lenx):
-            isk = [s[i - 1][j][0] - 10,
-                   s[i][j - 1][0] - 10,
-                   s[i - 1][j - 1][0] + penny(x[j - 1], y[i - 1], comp)]
-            d = max(isk)
-            dind = comand[isk.index(d)]
-            s[i][j] = (d, dind)
-    return s
+    s = [[0] * (n + 1) for _ in range(m + 1)]
+    directions = [[''] * (n + 1) for _ in range(m + 1)]
+
+    d = 10 if end_gap else 0
+
+    for i in range(1, n + 1):
+        s[0][i] = s[0][i - 1] - d
+        directions[0][i] = 'left'
+    for i in range(1, m + 1):
+        s[i][0] = s[i - 1][0] - d
+        directions[i][0] = 'up'
+
+    d = 10
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+
+            top = s[i - 1][j] - d if j != 1 and j != n and not end_gap else s[i - 1][j]
+            left = s[i][j - 1] - d if i != 1 and i != m and not end_gap else s[i][j - 1]
+            dig = s[i - 1][j - 1] + penny(x[j - 1], y[i - 1])
+            s[i][j] = max(top, left, dig)
+
+            if dig == s[i][j]:
+                directions[i][j] = 'dig'
+            elif top == s[i][j]:
+                directions[i][j] = 'up'
+            else:
+                directions[i][j] = 'left'
+
+    return directions, s
 
 
-def count_score_aff(x, y):
-    comand = ('up', 'left', 'dig')
-    comp = {'A': 'T',
-            'T': 'A',
-            'G': 'C',
-            'C': 'G',
-            }
+def count_score_aff(x, y, end_gap=False):
 
-    lenx, leny = len(x) + 1, len(y) + 1
-    s = [[(0, 0)] * lenx for _ in range(leny)]
-    a = [[0] * (lenx) for _ in range(leny)]
-    b = [[0] * (lenx) for _ in range(leny)]
+    n, m = len(x), len(y)
+    s = [[0] * (n + 1) for _ in range(m + 1)]
+    a = [[0] * (n + 1) for _ in range(m + 1)]
+    b = [[0] * (n + 1) for _ in range(m + 1)]
 
-    for i in range(1, lenx):
-        s[0][i] = (-10 - 0.5 * (i - 1), 0)
-        a[1][i] = s[0][i][0] - 10
-    for i in range(1, leny):
-        s[i][0] = (-10 - 0.5 * (i - 1), 0)
-        b[i][1] = s[i][0][0] - 10
+    directions = [[''] * (n + 1) for _ in range(m + 1)]
 
-    for i in range(1, leny):
-        for j in range(1, lenx):
-            isk = [a[i][j], b[i][j],
-                   s[i - 1][j - 1][0] + penny(x[j - 1],
-                                              y[i - 1],
-                                              comp)]
-            d = max(isk)
-            dind = comand[isk.index(d)]
-            s[i][j] = (d, dind)
+    for i in range(1, n + 1):
+        # print('lol')
+        s[0][i] = -10 - 0.5 * (i - 1)
+        directions[0][i] = 'left'
+        a[1][i] = s[0][i]
+    for i in range(1, m + 1):
+        s[i][0] = -10 - 0.5 * (i - 1)
+        directions[i][0] = 'up'
+        b[i][1] = s[i][0]
+
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            left = a[i][j]
+            top = b[i][j]
+            dig = s[i - 1][j - 1] + penny(x[j - 1], y[i - 1])
+            s[i][j] = max(top, left, dig)
+
+            if dig == s[i][j]:
+                directions[i][j] = 'dig'
+            elif top == s[i][j]:
+                directions[i][j] = 'up'
+            else:
+                directions[i][j] = 'left'
+
             try:
-                a[i + 1][j] = max(s[i][j][0] - 10, a[i][j] - 0.5)
+                tmp = s[i][j] - 10 if i != 1 and i != m and not end_gap else s[i][j]
+                a[i + 1][j] = max(tmp, a[i][j] - 0.5)
             except IndexError:
                 pass
             try:
-                b[i][j + 1] = max(s[i][j][0] - 10, b[i][j] - 0.5)
+                tmp = s[i][j] - 10 if j != 1 and j != n and not end_gap else s[i][j]
+                b[i][j + 1] = max(tmp, b[i][j] - 0.5)
             except IndexError:
                 pass
-    return s
+    return directions, s
 
 
-def print_align(i, j, upper, lower, mid, s, x, y):
-    if i == 0 and j == 0:
-        return upper[::-1], lower[::-1], mid[::-1]
+def print_align(directions, s, x, y):
+    i, j = len(y), len(x)
+    res1, res2, mid = '', '', ''
 
-    ind = s[i][j][1]
+    while j != 0 or i != 0:
+        ind = directions[i][j]
 
-    if ind == 'dig':
-        upper += x[j - 1]
-        lower += y[i - 1]
-
-        mid += '|' if upper[-1] == lower[-1] else '.'
-
-        return print_align(i - 1, j - 1, upper, lower, mid, s, x, y)
-    elif ind == 'up':
-        upper += '-'
-        mid += ' '
-        lower += y[i - 1]
-        return print_align(i - 1, j, upper, lower, mid, s, x, y)
-    elif ind == 'left':
-        upper += x[j - 1]
-        mid += ' '
-        lower += '-'
-        return print_align(i, j - 1, upper, lower, mid, s, x, y)
-    else:
-        if i == 0:
-            upper += x[j - 1]
+        if ind == 'dig':
+            res1 += x[j - 1]
+            res2 += y[i - 1]
+            mid += '|' if x[j - 1] == y[i - 1] else '.'
+            j -= 1
+            i -= 1
+        elif ind == 'up':
+            res1 += '-'
+            res2 += y[i - 1]
             mid += ' '
-            lower += '-'
-            return print_align(i, j - 1, upper, lower, mid, s, x, y)
-        elif j == 0:
-            upper += '-'
+            i -= 1
+        else:
+            res1 += x[j - 1]
+            res2 += '-'
             mid += ' '
-            lower += y[i - 1]
-            return print_align(i - 1, j, upper, lower, mid, s, x, y)
+            j -= 1
+    return res1[::-1], res2[::-1], mid[::-1]
 
 
-def print_all(s, x, y, all=None):
+def print_all(directions, s, x, y, all=None):
     if all:
         for i in s:
             print(i)
-    res1, res2, mid = print_align(len(s) - 1,
-                                  len(s[0]) - 1, '', '', '', s, x, y)
+        for i in directions:
+            print(i)
+    res1, res2, mid = print_align(directions, s, x, y)
 
     print()
     print(f"3'- {res1} -5'")
     print(f'    {mid}')
     print(f"5'- {res2} -3'")
     print()
-    print('Score:', s[-1][-1][0])
+    print('Score:', s[-1][-1])
 
 
 def parse_fasta(name):
@@ -130,12 +134,23 @@ def parse_fasta(name):
 
 
 def main():
-    x = input('Enter first sequence: ').upper()
-    y = input('Enter second sequence: ').upper()
-    # s = count_score_aff(x, y)
-    # print_all(s, 1)
-    s = count_score_linear(x, y)
-    print_all(s, x, y)
+    # x = input('Enter first sequence: ').upper().replace('\n', '')
+    # y = input('Enter second sequence: ').upper().replace('\n', '')
+    x = '''MKVFVVAILMTCIGGIMGLQCYTCASTTSEACADPFNAEGSGVLTLNCTSGQDVCQKSSSMASGLSVVSRSCASQSLCQDASGCQTTSAGGASVTNCCCGDNLCNGAGSLAASAFATVAVIVAAAVFSL
+MWCSMLDLFIASLLICIHTVYSLQCYTCAAEDTNENCKINEAPVLRTCPSTEDRCLTQVIYSTERGKLRIDKYCASQDGCDAATEQLGKRYFCDKSRAGWGCVECCDTDKCNLSSVSRVRASVAAVCAVAIAARFVS
+MTTIAPTSLLFLVLLLIPRESAAVASQQPLACGDSTGAVAPLCRCTVDGSRKIVNCSDLQLQTVPAGIPDDTHILNLSDNSIEELSSDVFNHLVELRELYMVQNAIRSDRLDVATFSRLSNLQLLDMSRNRLRLQEASDIEPFLPLFRLKTLDMAHNNIATIDTSFLTVLDRLENLYMTNNPLVCDCNLLWFKNWLLNKGTQPNFAASGVQCFTPESVRQQTVDTARFCIPVQRCYFCDSASTNAACNFAQQQCSGINPACQNEVRVTSGRFLISKSCQALDACLVNAQQNQNDCSSSTVNSVCRYCCQGDKCNAPETAILNGYRFPFPDEITEPPTAATSTPVRQTTTAESTRRPPPAAPTSRPPVPAPCPAEETQGVTGTFQWPETSSGDIVILPCAYDLQLKSATRLCGDDSTGWVEPNTRECPTASTILEELSNVTIVRGNALDVSETLTDVTSVPDVLKPNDVSNAVNTFENLANALGNYQEESPDVFGNVLDTLDQLTGVPSDQLVQSQLNDDSSSRLLRSVDTFNLGVQFQSNVLEEDTPSVDVVLVDITDPMDNGLLFFGSGKDLDNAQPTLVSGSASNADEVQTNNKSSSTDEIVKGSIYLPNSLLKSVGNKLSRCQFVMYEETTFFDVIQESARNRTISNKQEDEVDAIPTTDSGVSTTDVATNSTSASTSPPADCIAVSCREGYKTVINSVVISAAVADLNITNLQEPVTVTFRKARMDADNPRCVFWDEAKNGGWGGWSNEGCSLDINNNIDDTNVVCKCNHLTNFAMLMDIYDGPDIPPGHQLALSIISYAGCTLSLIGLVLTLVTYTCCGPRSKAKVHDKKFRGDKRAKVLVNFVISLIFVNVFFIAASVTAEFRESAPDELCMALAVCLHFSLLAAMAWMAIQAFNMYMALVRVFATYYSHFLLKMVIVGWGIPLVIVGITLGADLQNYGSNDDLCWLSGIPFYVAYLLPVCLILLFNVVVFVAVTWKLCQLRKSKISTSDRFDVAAQLRATVSVTILLGLTWLLGFFAIGDASLTFSYLFAAFNSLQGFAVFVFQCLLQPEMRQRWVLACCPYCAPETGDFRDSKSGVYSRSESQTNGAKAPNNNWRKGTTSTAASSYMALNTPGAVKDNPVYENTSAR
+MTTIAPTSLLFLVLLLIPRESAAVASQQPLACGDSTGAVAPLCRCTVDGSRKIVNCSDLQLQTVPAGIPDDTHILNLSDNSIEELSSDVFNHLVELRELYMVQNAIRSDRLDVATFSRLSNLQLLDMSRNRLRLQEASDIEPFLPLFRLKTLDMAHNNIATIDTSFLTVLDRLENLYMTNNPLVCDCNLLWFKNWLLNKGTQPNFAASGVQCFTPESVRQQTVDTARFCIPVQRCYFCDSASTNAACNFAQQQCSGINPACQNEVRVTSGRFLISKSCQALDACLVNAQQNQNDCSSSTVNSVCRYCCQGDKCNAPETAILNGYRFPFPDEITEPPTAAHQAPLRELVCEGGEFSISCGMGGTIDVQWALYGREDGSQACFTPRATPCGDPEASLSIVREMCQEQMQCGFVVSNERFGGDPCYLVLKYLVVNYTCNGQATSTPVRQTTTAESTRRPPPAAPTSRPPVPAPCPAEETQGVTGTFQWPETSSGDIVILPCAYDLQLKSATRLCGDDSTGWVEPNTRECPTASTILEELSNVTIVRGNALDVSETLTDVTSVPDVLKPNDVSNAVNTFENLANALGNYQEESPDVFGNVLDTLDQLTGVPSDQLVQSQLNDDSSSRLLRSVDTFNLGVQFQSNVLEEDTPSVDVVLVDITDPMDNGLLFFGSGKDLDNAQPTLVSGSASNADEVQTNNKSSSTDEIVKGSIYLPNSLLKSVGNKLSRCQFVMYEETTFFDVIQESARNRTISNKQEDEVDAIPTTDSGVSTTDVATNSTSASTSPPADCIAVSCREGYKTVINSVVISAAVADLNITNLQEPVTVTFRKARMDADNPRCVFWDEAKNGGWGGWSNEGCSLDINNNIDDTNVVCKCNHLTNFAMLMDIYDGPDIPPGHQLALSIISYAGCTLSLIGLVLTLVTYTCCGPRSKAKVHDKKFRGDKRAKVLVNFVISLIFVNVFFIAASVTAEFRESAPDELCMALAVCLHFSLLAAMAWMAIQAFNMYMALVRVFATYYSHFLLKMVIVGWGIPLVIVGITLGADLQNYGSNDDLCWLSGIPFYVAYLLPVCLILLFNVVVFVAVTWKLCQLRKSKISTSDRFDVAAQLRATVSVTILLGLTWLLGFFAIGDASLTFSYLFAAFNSLQGFAVFVFQCLLQPEMRQRWVLACCPYCAPETGDFRDSKSGVYSRSESQTNGAKAPNNNWRKGTTSTAASSYMALNTPGAVKDNPVYENTSAR
+MTRSEAGILLILALNAAVASGGMSRLFEDLLPYYCEDSEDVYCRHRGLADPRALLLSVLRKQAELQDANSGSIPQQSSPGDPIVVDIECDFNPSSLLPIPFLCGWSAENNDDINWEPGSILYNGLTGEEGPLALTAYANSILNTHTLTTPATASLLTPVIDGSTDDIIFAVIGFQYNLRGTQDNCKLELRYLRKDGARLALWSSVDEFITGRWVTVELSEVYPPIPFQLAFESTLSPGATTKPFAAVDDVKLQVGALPLVYDCEGGTLFADTCGFFDVDGRWSRWSGFNASAEGKGPKIDHTLGTSSGHFLINVNTRFSDGEARLRTPYYYRWSSEATCTLRLYYHAKTSGDMGVSVSDASGREDVFPVLLDYTETWVEHDIDLTSVIGKYRITINVTTSTGDDNYIAIDDVQFLEDECRGRRFCSSYPCLNNGICWQTSPEDFRCNCTKEFEGFDCSINVDECSRDPTLCAYDSDRICQDASPGYQCVCKPGTMEYNGKCIEACTETTCTRKYEVCLQNDNAFSCQCQYGYVESGDGECIRDKSEVKSGVAPYTSRVILGTYLGGSLLAVVVAALVVVSYFALCDEDEDGDEWKPDRVEANRSKEADAPYVSGLGEPATSRGQ
+MYLTLFFVNSLFKISNTAKQMDIKLRILMIVILVNNPHNGNAISCYVCDTSSNDDCNPGTSTTCGSEQICMNEVREENGLFIVRKMCKETDACQSQENQNPFQCHPGENVISLCFYCCNVDLCNSGNYLDVTSAIITTLGTTQLLLDPTTRAVTSSLATTVPPDPTTQALTEASPDPTTQALTEASPVPTTQALTEASPDPTTQALTEASPDPTTQVTTVASLDPSTLSSASSVMQPLLVSQDSSTQVVQTTINPSQEANCNADWNSASTYFIVTDTHHTIHSADMMDTTPARSRVACSLKCLHQNNCGFFAFNNVTLVCVLGRGIYESSKVQVQPGSTVFLRL
+MDIKLRILMIVILVNNPHNGNAISCYVCDTSSNDDCNPGTSTTCGSEQICMNEVREENGLFIVRKMCKETDACQSQENQNPFQCHPGENVISLCFYCCNVDLCNSGNYLDVTSAIITTLGTTQLLLDPTTRAVTSSLATTVPPDPTTQALTEASPDPTTQALTEASPVPTTQALTEASPDPTTQALTEASPDPTTQVTTVASLDPSTLSSASSVMQPLLVSQDSSTQVVQTTINPSQEANCNADWNSASTYFIVTDTHHTIHSADMMDTTPARSRVACSLKCLHQNNCGFFAFNNVTLVCVLGRGIYESSKVQVQPGSTVFLRL
+MNEVREENGLFIVRKMCKETDACQSQENQNPFQCHPGENVISLCFYCCNVDLCNSGNYLDVTSAIITTLGTTQLLLDPTTRAVTSSLATTVPPDPTTQALTEASPDPTTQALTEASPVPTTQALTEASPDPTTQALTEASPDPTTQVTTVASLDPSTLSSASSVMQPLLVSQDSSTQVVQTTINPSQEANCNADWNSASTYFIVTDTHHTIHSADMMDTTPARSRVACSLKCLHQNNCGFFAFNNVTLVCVLGRGIYESSKVQVQPGSTVFLRL'''
+    x = x.split('\n')
+    y = 'IQCYQCEEFQLNNDCSSPEFIVNCTVNVQDMCQKEVMEQSAGIMYRKSCASSAACLIASAGYQSFCSPGKLNSVCISCCNTPLCN'
+    for i in x:
+        # directions, s = count_score_aff(x, y)
+        # print_all(directions, s, x, y)
+        directions, s = count_score_linear(i, y, False)
+        print_all(directions, s, x, y)
 
 
 if __name__ == '__main__':
